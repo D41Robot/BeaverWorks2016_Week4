@@ -30,6 +30,7 @@ class ColorTracker:
         self.debugging = debugging
 	
         self.bridge = CvBridge()
+#Counting mech for images
 	self.redImageCount = 1
 	self.greenImageCount = 1
 	self.yellowImageCount = 1
@@ -39,17 +40,18 @@ class ColorTracker:
         rospy.loginfo("[%s] Initialized." %(self.node_name))
 		
 	#os.mkdir(~/racecar-ws/challenge_photos)
+#say hey we have an image
 	self.pub_type = rospy.Publisher("/exploration_challenge", String, queue_size=10)
 
     def cbImage(self,image_msg):
-	time.sleep(4) #Wait some bit
         thread = threading.Thread(target=self.processImage,args=(image_msg,))
         thread.setDaemon(True)
         thread.start()
 
     def detection(self, img):
+#Make image useful
 	RGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-#CHECK GREEN
+#HSV values for each color
         green_lower = np.array([54, 30, 60])
         green_upper = np.array([72, 255, 255])
         red_lower = np.array([0, 160, 130])
@@ -61,24 +63,28 @@ class ColorTracker:
         pink_lower = np.array([150, 20, 40])
         pink_upper = np.array([155, 100, 100])
 
+#Create mask of each color
         green_mask = cv2.inRange(img, green_lower, green_upper)
         red_mask = cv2.inRange(img, red_lower, red_upper)
         yellow_mask = cv2.inRange(img, yellow_lower, yellow_upper)
         blue_mask = cv2.inRange(img, blue_lower, blue_upper)
         pink_mask = cv2.inRange(img, pink_lower, pink_upper)
+#Combine all masks
         mask_all = cv2.add(green_mask, red_mask, yellow_mask, blue_mask, pink_mask)
 	contours = cv2.findContours(mask_all, cv2.cv.CV_RETR_EXTERNAL, cv2.cv.CV_CHAIN_APPROX_NONE)[0]
 	contours.sort()
+#Find largest contour, find its center, find the HSV value
 	largest = contours[len(contours) - 1]
 	center = cv2.moments(largest)
 	blob_color = hsv[int(centre['m01'] / centre['m00']), int(centre['m10'] / centre['m00']), 0]
 
+#Check if countour HSV value is in range for color, save image
 	if blob_color > 54 and blob_color < 72: #green found
-	    os.chdir('/home/racecar/challenge_photos/')
+	    os.chdir('/home/racecar/challenge_photos/') #Where we want the images saved to
 	    greenName = "green" + self.shape + str(self.greenImageCount) + ".png"
-	    cv2.imwrite(greenName, img)
-	    self.greenImageCount += 1
-	    self.pub_type.publish(greenName)
+	    cv2.imwrite(greenName, img) #Saves image to car
+	    self.greenImageCount += 1 #Add naming scheme, prevents overwright of image
+	    self.pub_type.publish(greenName) #Tells what image was found
     
 	    if blob_color > 0 and blob_color < 15: #red found
 	        os.chdir('/home/racecar/challenge_photos/')
