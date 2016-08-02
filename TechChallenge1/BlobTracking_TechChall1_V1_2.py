@@ -71,7 +71,7 @@ class ColorTracker:
             ret = self.detect_color_blob(img, green_lower, green_upper,"green")
 	    if ret != None: #green found
 		if biggest_blob[0] < ret[2]:
-	    	    Name = "green" + self.shape + str(self.greenImageCount) + ".png
+	    	    Name = "green" + self.shape + str(self.greenImageCount) + ".png"
 		    biggest_blob = (ret[2],"green")
         if self.lastColor != "red": #CHECK RED
             ret = self.detect_color_blob(img, red_lower, red_upper,"red")

@@ -65,11 +65,12 @@ class ColorTracker:
         	ret = self.detect_color_blob(img, green_lower, green_upper,"green")
         	#color_code = 1
 		if ret != None: #green found
-	    		os.chdir('/home/racecar/challenge_photos/')
+	    		
 			if biggest_blob[0] < ret[2]:
 	    			Name = "green" + self.shape + str(self.greenImageCount) + ".png
-				biggest_blob = (ret[2],ret[3])
-        if ret == None and self.lastColor != "red": #CHECK RED
+				biggest_blob = (ret[2],"green")
+
+        if self.lastColor != "red": #CHECK RED
             ret = self.detect_color_blob(img, red_lower, red_upper,"red")
 	    if ret != None: #red found
 	        os.chdir('/home/racecar/challenge_photos/')
@@ -118,6 +119,7 @@ class ColorTracker:
 	cv2.imwrite(greenName, img)
 	if biggest_blob[1] =='green':
 	    self.greenImageCount += 1
+	os.chdir('/home/racecar/challenge_photos/')
 	self.pub_type.publish(Name)
 	self.lastColor = biggest_blob[1]
 

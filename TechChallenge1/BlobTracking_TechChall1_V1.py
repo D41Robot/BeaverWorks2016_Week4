@@ -24,7 +24,6 @@ class ColorTracker:
                 Image, queue_size=1)
 	RGB = None
 	self.shape = 'none'
-	self.lastColor = "start"
 
         #self.pub_detection = rospy.Publisher("/detection", BlobMsg, queue_size=10)
 
@@ -51,77 +50,61 @@ class ColorTracker:
     def detection(self, img):
 	RGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 #CHECK GREEN
-	ret = None
-	biggest_blob = (0,None)
-	Name = None
         green_lower = np.array([54, 30, 60])
         green_upper = np.array([72, 255, 255])
-#            red_lower = np.array([0, 160, 130])
-#            red_upper = np.array([15, 255, 255])
-	red_lower = np.array([175, 25, 45])
-        red_upper = np.array([180, 35, 50])
+        ret = self.detect_color_blob(img, green_lower, green_upper)
+        color_code = 1
+	if ret != None: #green found
+	    os.chdir('/home/racecar/challenge_photos/')
+	    GreenName = "Green" + str(self.greenImageCount) + ".png"
+	    cv2.imwrite(GreenName, img)
+	    self.greenImageCount += 1
+	    self.pub_type.publish("Green " + self.shape + " " + GreenName)
 
-	if self.lastColor != "green":
-        	ret = self.detect_color_blob(img, green_lower, green_upper,"green")
-        	#color_code = 1
-		if ret != None: #green found
-	    		
-			if biggest_blob[0] < ret[2]:
-	    			Name = "green" + self.shape + str(self.greenImageCount) + ".png
-				biggest_blob = (ret[2],"green")
-
-        if self.lastColor != "red": #CHECK RED
-            ret = self.detect_color_blob(img, red_lower, red_upper,"red")
+        if ret == None: #CHECK RED
+            red_lower = np.array([0, 160, 130])
+            red_upper = np.array([15, 255, 255])
+            ret = self.detect_color_blob(img, red_lower, red_upper)
 	    if ret != None: #red found
 	        os.chdir('/home/racecar/challenge_photos/')
-		redName = "red" + self.shape + str(self.redImageCount) + ".png"
-		cv2.imwrite(redName, img)
+		RedName = "Red" + str(self.redImageCount) + ".png"
+		cv2.imwrite(RedName, img)
 		self.redImageCount += 1
-		#self.pub_type.publish(redName)
-		#self.lastColor = "red"
+		self.pub_type.publish("Red " + self.shape + " " +RedName)
         
-	if ret == None and self.lastColor != "yellow": #CHECK Yellow
-            yellow_lower = np.array([20, 50, 25])
-            yellow_upper = np.array([25, 100, 100])
-            ret = self.detect_color_blob(img, yellow_lower, yellow_upper,"yellow")
+	if ret == None: #CHECK Yellow
+            yellow_lower = np.array([40, 85, 50])
+            yellow_upper = np.array([55, 200, 200])
+            ret = self.detect_color_blob(img, yellow_lower, yellow_upper)
 	    if ret != None: #yellow found
 	    	os.chdir('/home/racecar/challenge_photos/')
-	    	yellowName = "yellow" + self.shape + str(self.yellowImageCount) + ".png"
-	    	cv2.imwrite(yellowName, img)
+	    	YellowName = "Yellow" + str(self.yellowImageCount) + ".png"
+	    	cv2.imwrite(YellowName, img)
 	    	self.yellowImageCount += 1
-	   	self.pub_type.publish(yellowName)
-		self.lastColor = "yellow"
+	   	self.pub_type.publish("Yellow " + self.shape + " " + YellowName)
 				
-        if ret == None and self.lastColor != "blue": #CHECK blue
-            blue_lower = np.array([100, 15, 15])
-            blue_upper = np.array([120, 100, 100])
-            ret = self.detect_color_blob(img, blue_lower, blue_upper,"blue")
+        if ret == None: #CHECK blue
+            blue_lower = np.array([200, 30, 30])
+            blue_upper = np.array([220, 200, 200])
+            ret = self.detect_color_blob(img, blue_lower, blue_upper)
 	    if ret != None: #blue found
 	        os.chdir('/home/racecar/challenge_photos/')
-	        blueName = "Blue" + self.shape + str(self.blueImageCount) + ".png"
-	        cv2.imwrite(blueName, img)
+	        BlueName = "Blue" + str(self.blueImageCount) + ".png"
+	        cv2.imwrite(BlueName, img)
 	        self.blueImageCount += 1
-	        self.pub_type.publish(blueName)
-		self.lastColor = "blue"
+	        self.pub_type.publish("Blue " + self.shape + " " + BlueName)
 				
-        if ret == None and self.lastColor != "pink": #CHECK PINK
-            pink_lower = np.array([150, 20, 40])
-            pink_upper = np.array([155, 100, 100])
-            ret = self.detect_color_blob(img, pink_lower, pink_upper,"pink")
+        if ret == None: #CHECK PINK
+            pink_lower = np.array([300, 40, 80])
+            pink_upper = np.array([310, 200, 200])
+            ret = self.detect_color_blob(img, pink_lower, pink_upper)
 	    if ret != None: #pink found
 	        os.chdir('/home/racecar/challenge_photos/')
 	        Kitty = "Image" + str(self.pinkImageCount)
 	        cv2.imwrite(Kitty, img)
 	        self.pinkImageCount += 1
 	        self.pub_type.publish("Image" + self.shape + " " + Kitty)
-		self.lastColor = "pink"
-
-	cv2.imwrite(greenName, img)
-	if biggest_blob[1] =='green':
-	    self.greenImageCount += 1
-	os.chdir('/home/racecar/challenge_photos/')
-	self.pub_type.publish(Name)
-	self.lastColor = biggest_blob[1]
+            color_code = 2
 
         if ret == None: #if no blob was found
             cx = 0
@@ -148,8 +131,8 @@ class ColorTracker:
 
         contours, h = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        #if self.debugging:
-         #   cv2.drawContours(img, contours, -1, (0, 0, 255), 2)
+        if self.debugging:
+            cv2.drawContours(img, contours, -1, (0, 0, 255), 2)
 
         sorted_contours = sorted(contours, key = lambda c: cv2.contourArea(c), reverse=True)
 
@@ -159,19 +142,18 @@ class ColorTracker:
         c = sorted_contours[0]
 
         area = cv2.contourArea(c)
-        if area < 1000: # minimum area threshold
-	    cv2.drawContours(img, c, -1, (0,0,255), 2)
+        if area < 2000: # minimum area threshold
             return None
 
         perim = cv2.arcLength(c, True) # perimeter
         approx = cv2.approxPolyDP(c, 0.05 * perim, True)
 
         if len(approx) == 4:
-            self.shape = 'Square'
+            self.shape = 'square'
 	elif len(approx) == 12:
-	    self.shape = 'Cross'
+	    self.shape = 'cross'
 	elif len(approx) > 12:
-	    self.shape = 'Circle'
+	    self.shape = 'circle'
 	else:
 	    return None
 
@@ -181,7 +163,7 @@ class ColorTracker:
             cv2.drawContours(img, [approx], -1, (0, 255, 0), 5) 
 
             coord = (approx[0][0][0], approx[0][0][1])
-            cv2.putText(img, "Color", coord, cv2.FONT_HERSHEY_PLAIN, 3, (255, 255, 255),  2)
+            cv2.putText(img, "GREEN", coord, cv2.FONT_HERSHEY_PLAIN, 3, (255, 255, 255),  2)
 
         M = cv2.moments(approx)
         cx, cy = int(M['m10']/M['m00']), int(M['m01']/M['m00'])
@@ -214,5 +196,3 @@ if __name__=="__main__":
     rospy.init_node('ColorTracker')
     e = ColorTracker(True)
     rospy.spin()
-
-
