@@ -67,7 +67,7 @@ class ColorTracker:
         green_upper = np.array([70, 255, 255])
         red_lower = np.array([175, 50, 75])
         red_upper = np.array([180, 200, 255])
-        yellow_lower = np.array([25, 50, 75])
+        yellow_lower = np.array([25, 50, 150])
         yellow_upper = np.array([45, 150, 255])
         blue_lower = np.array([110, 100, 75])
         blue_upper = np.array([130, 200, 255])
