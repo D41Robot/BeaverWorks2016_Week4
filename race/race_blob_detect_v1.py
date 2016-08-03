@@ -19,7 +19,7 @@ class ColorTracker:
         self.pub_image = rospy.Publisher("~echo_image",\
                 Image, queue_size=1)
 
-        self.pub_detection = rospy.Publisher("/color_detection", String, queue_size=10)
+        self.pub_detection = rospy.Publisher("/color_detection", String, queue_size=10) #publish the color
 	self.pub_blob_size = rospy.Publsiher("/blob_size", Float32, queue_size=10)
 
         self.debugging = debugging
@@ -61,18 +61,21 @@ class ColorTracker:
         sorted_contours = sorted(contours, key = lambda c: cv2.contourArea(c), reverse=True)
 
         if len(sorted_contours) < 1:
+	    self.pub_blob_size.publish(0)
             return None
 
         c = sorted_contours[0]
 
         area = cv2.contourArea(c)
         if area < 400: # minimum area threshold
+	    self.pub_blob_size.publish(0)
             return None
 
         perim = cv2.arcLength(c, True) # perimeter
         approx = cv2.approxPolyDP(c, 0.05 * perim, True)
 
         if len(approx) != 4:
+	    self.pub_blob_size.publish(0)
             return None
 
 
@@ -90,8 +93,8 @@ class ColorTracker:
             cv2.circle(img, (cx, cy), 10, (255, 255, 255), -1)
 
         approx_area = cv2.contourArea(approx)
-	self.pub_blob_size.publish(approx_area)
 
+	self.pub_blob_size.publish(approx_area)
         return color
 
 
